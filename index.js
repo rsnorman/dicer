@@ -12,7 +12,7 @@ function radiansToDegrees(radians) {
 
 /**
  */
-var Dicer = function(radius, sectionHeight, sectionSpace) {
+var Dicer = function(radius, sectionHeight, sliceSpace) {
   this.getRadius = function getRadius() {
     return radius;
   };
@@ -21,14 +21,14 @@ var Dicer = function(radius, sectionHeight, sectionSpace) {
     return sectionHeight;
   };
 
-  this.getSectionSpace = function getSectionSpace() {
-    return sectionSpace;
+  this.getSliceSpace = function getSliceSpace() {
+    return sliceSpace;
   };
 
   this.getSliceStartAngle = function getSliceStartAngle() {
     var halfSectionHeight, angleInRadians;
     halfSectionHeight = sectionHeight / 2;
-    angleInRadians = Math.atan(halfSectionHeight / radius);
+    angleInRadians = Math.asin(halfSectionHeight / radius);
     return radiansToDegrees(angleInRadians);
   };
 
@@ -42,7 +42,7 @@ var Dicer = function(radius, sectionHeight, sectionSpace) {
   this.getSliceEndAngle = function getSliceEndAngle() {
     var halfSectionHeight, angleInRadians;
     halfSectionHeight = sectionHeight / 2;
-    angleInRadians = Math.atan(halfSectionHeight / radius);
+    angleInRadians = Math.asin(halfSectionHeight / radius);
     return 360 - radiansToDegrees(angleInRadians);
   };
 
@@ -54,16 +54,11 @@ var Dicer = function(radius, sectionHeight, sectionSpace) {
   };
 
   this.getSliceCenterAngle = function getSliceCenterAngle() {
-    return this.getSliceStartAngle() - (this.getSliceAngle() / 2);
+    return getCenterAngle(this.getSliceStartAngle(), this.getSliceAngle());
   };
 
   this.getSliceCenterPosition = function getSliceCenterPosition() {
-    var centerAngle;
-    centerAngle = this.getSliceCenterAngle();
-    return {
-      x: Math.cos(centerAngle) * radius,
-      y: Math.sin(centerAngle) * radius
-    };
+    return getPositionFromAngle(this.getSliceCenterAngle());
   };
 
   this.getSliceAngle = function getSliceAngle() {
@@ -76,19 +71,46 @@ var Dicer = function(radius, sectionHeight, sectionSpace) {
   };
 
   this.slice = function slice(numberOfSlices) {
-    return [{
-      startAngle: this.getSliceStartAngle(),
-      centerAngle: this.getSliceCenterAngle(),
-      endAngle:   this.getSliceEndAngle(),
-      totalAngle: this.getSliceAngle(),
-      startPosition: this.getSliceStartPosition(),
-      centerPosition: this.getSliceCenterPosition(),
-      endPosition: this.getSliceEndPosition()
-    }];
+    var slices, sliceAngle, startAngle, endAngle, centerAngle, _i;
+    slices = [];
+    sliceAngle = this.getSliceAngle() / numberOfSlices;
+    startAngle = this.getSliceStartAngle();
+
+    for (_i = 0; _i < numberOfSlices; _i++) {
+      endAngle = startAngle - sliceAngle;
+      endAngle = endAngle < 0 ? 360 + endAngle : endAngle;
+      centerAngle = getCenterAngle(startAngle, sliceAngle);
+
+      slices.push({
+        startAngle:     startAngle,
+        centerAngle:    centerAngle,
+        endAngle:       endAngle,
+        totalAngle:     sliceAngle,
+        startPosition:  getPositionFromAngle(startAngle),
+        centerPosition: getPositionFromAngle(centerAngle),
+        endPosition:    getPositionFromAngle(endAngle)
+      });
+
+      startAngle -= sliceAngle;
+    }
+
+    return slices;
   };
 
   function signedMod(number, otherNumber) {
     return number - Math.floor(number / otherNumber) * otherNumber;
+  }
+
+  function getCenterAngle(startAngle, totalAngle) {
+    return startAngle - (totalAngle / 2);
+  }
+
+  function getPositionFromAngle(angle) {
+    var radians = angle * Math.PI / 180;
+    return {
+      x: Math.cos(radians) * radius,
+      y: Math.sin(radians) * radius
+    };
   }
 };
 
