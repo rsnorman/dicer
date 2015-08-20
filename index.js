@@ -6,10 +6,6 @@
 
 'use strict';
 
-function radiansToDegrees(radians) {
-  return radians * 180 / Math.PI;
-};
-
 /**
  */
 var Dicer = function(radius, sectionHeight, sliceSpace) {
@@ -71,15 +67,28 @@ var Dicer = function(radius, sectionHeight, sliceSpace) {
   };
 
   this.slice = function slice(numberOfSlices) {
-    var slices, sliceAngle, startAngle, endAngle, centerAngle, _i;
+    var slices, sliceAngle, startAngle, endAngle,
+      centerAngle, spaceAngle, totalSpaceAngle, _i;
     slices = [];
-    sliceAngle = this.getSliceAngle() / numberOfSlices;
+
+    if ( !!sliceSpace ) {
+      spaceAngle  = getDegreesFromLength(sliceSpace, radius);
+    } else {
+      spaceAngle = 0
+    }
+
+    sliceAngle = (
+      this.getSliceAngle() - (spaceAngle * (numberOfSlices - 1))
+    ) / numberOfSlices;
+
     startAngle = this.getSliceStartAngle();
 
     for (_i = 0; _i < numberOfSlices; _i++) {
-      endAngle = startAngle - sliceAngle;
-      endAngle = endAngle < 0 ? 360 + endAngle : endAngle;
+      startAngle  = startAngle < 0 ? 360 + startAngle : startAngle;
+      endAngle    = startAngle - sliceAngle;
+      endAngle    = endAngle < 0 ? 360 + endAngle : endAngle;
       centerAngle = getCenterAngle(startAngle, sliceAngle);
+      centerAngle = centerAngle < 0 ? 360 + centerAngle : centerAngle;
 
       slices.push({
         startAngle:     startAngle,
@@ -91,7 +100,7 @@ var Dicer = function(radius, sectionHeight, sliceSpace) {
         endPosition:    getPositionFromAngle(endAngle)
       });
 
-      startAngle -= sliceAngle;
+      startAngle -= sliceAngle + spaceAngle;
     }
 
     return slices;
@@ -111,6 +120,21 @@ var Dicer = function(radius, sectionHeight, sliceSpace) {
       x: Math.cos(radians) * radius,
       y: Math.sin(radians) * radius
     };
+  }
+
+  function radiansToDegrees(radians) {
+    return radians * 180 / Math.PI;
+  }
+
+  function getDegreesFromLength(length, radius) {
+    var circumference;
+    circumference = getCircumference(radius);
+
+    return length * 360 / circumference;
+  }
+
+  function getCircumference(radius) {
+    return 2 * Math.PI * radius;
   }
 };
 
