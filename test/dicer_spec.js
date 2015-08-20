@@ -8,6 +8,7 @@ describe('Dicer', function() {
     radius        = 100;
     sectionHeight = 64;
     sliceSpace    = 0;
+    direction     = 'left';
   });
 
   describe('getRadius', function() {
@@ -36,6 +37,16 @@ describe('Dicer', function() {
     it('returns the start angle of the slice', function() {
       assert.equal(round(dicer().getSliceStartAngle()), 18.66);
     });
+
+    describe('with slice facing right', function() {
+      beforeEach(function() {
+        direction = 'right';
+      });
+
+      it('returns the start angle of the slice', function() {
+        assert.equal(round(dicer().getSliceStartAngle()), 161.34);
+      });
+    });
   });
 
   describe('getSliceStartPosition', function() {
@@ -43,11 +54,32 @@ describe('Dicer', function() {
       assert.equal(round(dicer().getSliceStartPosition().x), 94.74);
       assert.equal(dicer().getSliceStartPosition().y, 32);
     });
+
+    describe('with slice facing right', function() {
+      beforeEach(function() {
+        direction = 'right';
+      });
+
+      it('returns the start position of the slice on the circle', function() {
+        assert.equal(round(dicer().getSliceStartPosition().x), -94.74);
+        assert.equal(dicer().getSliceStartPosition().y, 32);
+      });
+    });
   });
 
   describe('getSliceEndAngle', function() {
     it('returns the end angle of the slice', function() {
       assert.equal(round(dicer().getSliceEndAngle()), 341.34);
+    });
+
+    describe('with slice facing right', function() {
+      beforeEach(function() {
+        direction = 'right';
+      });
+
+      it('returns the end angle of the slice', function() {
+        assert.equal(round(dicer().getSliceEndAngle()), 198.66);
+      });
     });
   });
 
@@ -56,11 +88,33 @@ describe('Dicer', function() {
       assert.equal(round(dicer().getSliceEndPosition().x), 94.74);
       assert.equal(dicer().getSliceEndPosition().y, -32);
     });
+
+    describe('with slice facing right', function() {
+      beforeEach(function() {
+        direction = 'right';
+      });
+
+      it('returns the end position of the slice on the circle', function() {
+        assert.equal(round(dicer().getSliceEndPosition().x), -94.74);
+        assert.equal(dicer().getSliceEndPosition().y, -32);
+      });
+    });
   });
 
   describe('getSliceAngle', function() {
     it('returns the total angle of the slice', function() {
       assert.equal(round(dicer().getSliceAngle()), 37.33);
+    });
+
+    describe('with slice facing right', function() {
+      beforeEach(function() {
+        direction = 'right';
+      });
+
+      it('returns the total angle of the slice', function() {
+        console.log('TODO: figure out how to make this positive');
+        assert.equal(round(dicer().getSliceAngle()), -37.33);
+      });
     });
   });
 
@@ -68,12 +122,33 @@ describe('Dicer', function() {
     it('returns the angle that bisects the slice', function() {
       assert.equal(round(dicer().getSliceCenterAngle()), 0);
     });
+
+    describe('with slice facing right', function() {
+      beforeEach(function() {
+        direction = 'right';
+      });
+
+      it('returns the center angle of the slice', function() {
+        assert.equal(round(dicer().getSliceCenterAngle()), 180);
+      });
+    });
   });
 
   describe('getSliceCenterPosition', function() {
     it('returns the center position of the slice on the circle', function() {
       assert.equal(round(dicer().getSliceCenterPosition().x), 100);
       assert.equal(round(dicer().getSliceCenterPosition().y), 0);
+    });
+
+    describe('with slice facing right', function() {
+      beforeEach(function() {
+        direction = 'right';
+      });
+
+      it('returns the center position of the slice on the circle', function() {
+        assert.equal(round(dicer().getSliceCenterPosition().x), -100);
+        assert.equal(round(dicer().getSliceCenterPosition().y), 0);
+      });
     });
   });
 
@@ -93,12 +168,17 @@ describe('Dicer', function() {
 
       function runSliceSpecsAtIndex(sliceIndex, dicerOptions) {
         describe(description, function() {
-          describe('for slice at index ' + sliceIndex, function() {
+          describe('with slice at index ' + sliceIndex, function() {
             var slice, expectedSlice;
 
             beforeEach(function() {
               var dicer;
-              dicer = new Dicer(radius, sectionHeight, dicerOptions.sliceSpace);
+              dicer = new Dicer(
+                radius,
+                sectionHeight,
+                dicerOptions.sliceSpace,
+                dicerOptions.direction
+              );
               slice = dicer.slice(numberOfSlices)[sliceIndex];
               expectedSlice = expectedSlices[sliceIndex];
             });
@@ -119,28 +199,37 @@ describe('Dicer', function() {
               assert.equal(round(slice.totalAngle), expectedSlice.totalAngle);
             });
 
-            it('returns the start position on the circle', function() {
+            it('returns the start x position on the circle', function() {
               assert.equal(
                 round(slice.startPosition.x), expectedSlice.startPosition.x
               );
+            });
+
+            it('returns the start y position on the circle', function() {
               assert.equal(
                 round(slice.startPosition.y), expectedSlice.startPosition.y
               );
             });
 
-            it('returns the center position on the circle', function() {
+            it('returns the center x position on the circle', function() {
               assert.equal(
                 round(slice.centerPosition.x), expectedSlice.centerPosition.x
               );
+            });
+
+            it('returns the center y position on the circle', function() {
               assert.equal(
                 round(slice.centerPosition.y), expectedSlice.centerPosition.y
               );
             });
 
-            it('returns the end position on the circle', function() {
+            it('returns the end x position on the circle', function() {
               assert.equal(
                 round(slice.endPosition.x), expectedSlice.endPosition.x
               );
+            });
+
+            it('returns the end y position on the circle', function() {
               assert.equal(
                 round(slice.endPosition.y), expectedSlice.endPosition.y
               );
@@ -173,6 +262,27 @@ describe('Dicer', function() {
       }
     }]);
 
+    runSliceSpecs('for 1 slice facing right', 1, {
+     direction: 'right'
+    }, [{
+      startAngle: 161.34,
+      centerAngle: 180,
+      endAngle: 198.66,
+      totalAngle: 37.33,
+      startPosition: {
+        x: -94.74,
+        y: 32
+      },
+      centerPosition: {
+        x: -100,
+        y: 0
+      },
+      endPosition: {
+        x: -94.74,
+        y: -32
+      }
+    }]);
+
     runSliceSpecs('for 1 slice with slice space', 1, {
       sliceSpace: 5
     }, [{
@@ -190,6 +300,28 @@ describe('Dicer', function() {
       },
       endPosition: {
         x: 94.74,
+        y: -32
+      }
+    }]);
+
+    runSliceSpecs('for 1 slice with slice space with facing right', 1, {
+      sliceSpace: 5,
+      direction: 'right'
+    }, [{
+      startAngle: 161.34,
+      centerAngle: 180,
+      endAngle: 198.66,
+      totalAngle: 37.33,
+      startPosition: {
+        x: -94.74,
+        y: 32
+      },
+      centerPosition: {
+        x: -100,
+        y: 0
+      },
+      endPosition: {
+        x: -94.74,
         y: -32
       }
     }]);
@@ -230,6 +362,44 @@ describe('Dicer', function() {
       }
     }]);
 
+    runSliceSpecs('for 2 slices facing right', 2, {
+      direction: 'right'
+    }, [{
+      startAngle: 161.34,
+      centerAngle: 170.67,
+      endAngle: 180,
+      totalAngle: 18.66,
+      startPosition: {
+        x: -94.74,
+        y: 32
+      },
+      centerPosition: {
+        x: -98.68,
+        y: 16.21
+      },
+      endPosition: {
+        x: -100,
+        y: 0
+      }
+    }, {
+      startAngle: 180,
+      centerAngle: 189.33,
+      endAngle: 198.66,
+      totalAngle: 18.66,
+      startPosition: {
+        x: -100,
+        y: 0
+      },
+      centerPosition: {
+        x: -98.68,
+        y: -16.21
+      },
+      endPosition: {
+        x: -94.74,
+        y: -32
+      }
+    }]);
+
     runSliceSpecs('for 2 slices with space', 2, {
       sliceSpace: 5
     }, [{
@@ -264,6 +434,45 @@ describe('Dicer', function() {
       },
       endPosition: {
         x: 94.74,
+        y: -32
+      }
+    }]);
+
+    runSliceSpecs('for 2 slices facing right with space', 2, {
+      sliceSpace: 5,
+      direction: 'right'
+    }, [{
+      startAngle: 161.34,
+      centerAngle: 169.95,
+      endAngle: 178.57,
+      totalAngle: 17.23,
+      startPosition: {
+        x: -94.74,
+        y: 32
+      },
+      centerPosition: {
+        x: -98.47,
+        y: 17.45
+      },
+      endPosition: {
+        x: -99.97,
+        y: 2.5
+      }
+    }, {
+      startAngle: 181.43,
+      centerAngle: 190.05,
+      endAngle: 198.66,
+      totalAngle: 17.23,
+      startPosition: {
+        x: -99.97,
+        y: -2.5
+      },
+      centerPosition: {
+        x: -98.47,
+        y: -17.45
+      },
+      endPosition: {
+        x: -94.74,
         y: -32
       }
     }]);
@@ -317,6 +526,61 @@ describe('Dicer', function() {
       },
       endPosition: {
         x: 94.74,
+        y: -32
+      }
+    }]);
+
+    runSliceSpecs('for 3 slices facing right', 3, {
+     direction: 'right'
+    }, [{
+      startAngle: 161.34,
+      centerAngle: 167.56,
+      endAngle: 173.78,
+      totalAngle: 12.44,
+      startPosition: {
+        x: -94.74,
+        y: 32
+      },
+      centerPosition: {
+        x: -97.65,
+        y: 21.55
+      },
+      endPosition: {
+        x: -99.41,
+        y: 10.84
+      }
+    }, {
+      startAngle: 173.78,
+      centerAngle: 180,
+      endAngle: 186.22,
+      totalAngle: 12.44,
+      startPosition: {
+        x: -99.41,
+        y: 10.84
+      },
+      centerPosition: {
+        x: -100,
+        y: 0
+      },
+      endPosition: {
+        x: -99.41,
+        y: -10.84
+      }
+    }, {
+      startAngle: 186.22,
+      centerAngle: 192.44,
+      endAngle: 198.66,
+      totalAngle: 12.44,
+      startPosition: {
+        x: -99.41,
+        y: -10.84
+      },
+      centerPosition: {
+        x: -97.65,
+        y: -21.55
+      },
+      endPosition: {
+        x: -94.74,
         y: -32
       }
     }]);
@@ -375,10 +639,68 @@ describe('Dicer', function() {
         y: -32
       }
     }]);
+
+    runSliceSpecs('for 3 slices facing right with space', 3, {
+     sliceSpace: 5,
+     direction: 'right'
+    }, [{
+      startAngle: 161.34,
+      centerAngle: 166.6,
+      endAngle: 171.87,
+      totalAngle: 10.53,
+      startPosition: {
+        x: -94.74,
+        y: 32
+      },
+      centerPosition: {
+        x: -97.28,
+        y: 23.17
+      },
+      endPosition: {
+        x: -98.99,
+        y: 14.14
+      }
+    }, {
+      startAngle: 174.73,
+      centerAngle: 180,
+      endAngle: 185.27,
+      totalAngle: 10.53,
+      startPosition: {
+        x: -99.58,
+        y: 9.18
+      },
+      centerPosition: {
+        x: -100,
+        y: 0
+      },
+      endPosition: {
+        x: -99.58,
+        y: -9.18
+      }
+    }, {
+      startAngle: 188.13,
+      centerAngle: 193.4,
+      endAngle: 198.66,
+      totalAngle: 10.53,
+      startPosition: {
+        x: -98.99,
+        y: -14.14
+      },
+      centerPosition: {
+        x: -97.28,
+        y: -23.17
+      },
+      endPosition: {
+        x: -94.74,
+        y: -32
+      }
+    }]);
   });
 
   function dicer() {
-    return _dicer = _dicer || new Dicer(radius, sectionHeight, sliceSpace);
+    return _dicer = _dicer || new Dicer(
+      radius, sectionHeight, sliceSpace, direction
+    );
   }
 
   function round(degrees) {

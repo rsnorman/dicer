@@ -8,7 +8,9 @@
 
 /**
  */
-var Dicer = function(radius, sectionHeight, sliceSpace) {
+var Dicer = function(radius, sectionHeight, sliceSpace, direction) {
+  direction = direction || 'left';
+
   this.getRadius = function getRadius() {
     return radius;
   };
@@ -22,16 +24,26 @@ var Dicer = function(radius, sectionHeight, sliceSpace) {
   };
 
   this.getSliceStartAngle = function getSliceStartAngle() {
-    var halfSectionHeight, angleInRadians;
+    var halfSectionHeight, angleInRadians, hypotenuse;
     halfSectionHeight = sectionHeight / 2;
     angleInRadians = Math.asin(halfSectionHeight / radius);
+    if ( direction === 'right' ) {
+      angleInRadians = Math.PI - angleInRadians;
+    }
     return radiansToDegrees(angleInRadians);
   };
 
   this.getSliceStartPosition = function getSliceStartPosition() {
+    var xPos;
+    xPos = Math.sqrt(Math.pow(radius, 2) - Math.pow(sectionHeight / 2, 2));
+
+    if ( direction === 'right' ) {
+      xPos = xPos * -1;
+    }
+
     return {
       y: sectionHeight / 2,
-      x: Math.sqrt(Math.pow(radius, 2) - Math.pow(sectionHeight / 2, 2))
+      x: xPos
     };
   };
 
@@ -39,13 +51,23 @@ var Dicer = function(radius, sectionHeight, sliceSpace) {
     var halfSectionHeight, angleInRadians;
     halfSectionHeight = sectionHeight / 2;
     angleInRadians = Math.asin(halfSectionHeight / radius);
+    if ( direction === 'right' ) {
+      angleInRadians = Math.PI - angleInRadians;
+    }
     return 360 - radiansToDegrees(angleInRadians);
   };
 
   this.getSliceEndPosition = function getSliceEndPosition() {
+    var xPos;
+    xPos = Math.sqrt(Math.pow(radius, 2) - Math.pow(sectionHeight / 2, 2));
+
+    if ( direction === 'right' ) {
+      xPos = xPos * -1;
+    }
+
     return {
       y: sectionHeight / -2,
-      x: Math.sqrt(Math.pow(radius, 2) - Math.pow(sectionHeight / -2, 2))
+      x: xPos
     };
   };
 
@@ -60,51 +82,60 @@ var Dicer = function(radius, sectionHeight, sliceSpace) {
   this.getSliceAngle = function getSliceAngle() {
     var startAngle, endAngle, angle;
     startAngle = this.getSliceStartAngle();
-    endAngle = this.getSliceEndAngle();
-    angle = startAngle - endAngle;
+    endAngle   = this.getSliceEndAngle();
+    angle      = startAngle - endAngle;
 
     return signedMod(angle + 180, 360) - 180;
   };
 
   this.slice = function slice(numberOfSlices) {
-    var slices, sliceAngle, startAngle, endAngle,
-      centerAngle, spaceAngle, totalSpaceAngle, _i;
-    slices = [];
+    var slices, sliceAngle, startAngle, spaceAngle, _i;
 
-    if ( !!sliceSpace ) {
-      spaceAngle  = getDegreesFromLength(sliceSpace, radius);
-    } else {
-      spaceAngle = 0
+    slices     = [];
+
+    spaceAngle = getSpaceAngle(sliceSpace, radius);
+    if ( direction === 'right' ) {
+      spaceAngle = spaceAngle * -1;
     }
 
-    sliceAngle = (
-      this.getSliceAngle() - (spaceAngle * (numberOfSlices - 1))
-    ) / numberOfSlices;
-
     startAngle = this.getSliceStartAngle();
+    sliceAngle = getSliceAngle(
+      this.getSliceAngle(), numberOfSlices, spaceAngle
+    );
 
     for (_i = 0; _i < numberOfSlices; _i++) {
-      startAngle  = startAngle < 0 ? 360 + startAngle : startAngle;
-      endAngle    = startAngle - sliceAngle;
-      endAngle    = endAngle < 0 ? 360 + endAngle : endAngle;
-      centerAngle = getCenterAngle(startAngle, sliceAngle);
-      centerAngle = centerAngle < 0 ? 360 + centerAngle : centerAngle;
-
-      slices.push({
-        startAngle:     startAngle,
-        centerAngle:    centerAngle,
-        endAngle:       endAngle,
-        totalAngle:     sliceAngle,
-        startPosition:  getPositionFromAngle(startAngle),
-        centerPosition: getPositionFromAngle(centerAngle),
-        endPosition:    getPositionFromAngle(endAngle)
-      });
-
+      slices.push(buildSlice(startAngle, sliceAngle));
       startAngle -= sliceAngle + spaceAngle;
     }
 
     return slices;
   };
+
+  function buildSlice(startAngle, sliceAngle) {
+    var endAngle, centerAngle;
+    endAngle    = startAngle - sliceAngle;
+    centerAngle = getCenterAngle(startAngle, sliceAngle);
+
+    return {
+      startAngle:     absAngle(startAngle),
+      centerAngle:    absAngle(centerAngle),
+      endAngle:       absAngle(endAngle),
+      totalAngle:     Math.abs(sliceAngle),
+      startPosition:  getPositionFromAngle(startAngle),
+      centerPosition: getPositionFromAngle(centerAngle),
+      endPosition:    getPositionFromAngle(endAngle)
+    };
+  }
+
+  function getSliceAngle(fullSliceAngle, numberOfSlices, spaceAngle) {
+    var totalSpaceAngle;
+    totalSpaceAngle = spaceAngle * (numberOfSlices - 1);
+    return (fullSliceAngle - totalSpaceAngle) / numberOfSlices;
+  }
+
+  function getSpaceAngle(sliceSpace, radius) {
+    return getDegreesFromLength(sliceSpace || 0, radius);
+  }
 
   function signedMod(number, otherNumber) {
     return number - Math.floor(number / otherNumber) * otherNumber;
@@ -112,6 +143,10 @@ var Dicer = function(radius, sectionHeight, sliceSpace) {
 
   function getCenterAngle(startAngle, totalAngle) {
     return startAngle - (totalAngle / 2);
+  }
+
+  function absAngle(angle) {
+    return angle < 0 ? 360 + angle : angle;
   }
 
   function getPositionFromAngle(angle) {
