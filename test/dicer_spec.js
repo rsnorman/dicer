@@ -1,4 +1,5 @@
 var assert = require('assert');
+var round  = require('./support/helpers').round;
 var Dicer = require('..');
 
 describe('Dicer', function() {
@@ -52,7 +53,7 @@ describe('Dicer', function() {
   describe('getSliceStartPosition', function() {
     it('returns the start position of the slice on the circle', function() {
       assert.equal(round(dicer().getSliceStartPosition().x), 94.74);
-      assert.equal(dicer().getSliceStartPosition().y, 32);
+      assert.equal(round(dicer().getSliceStartPosition().y), 32);
     });
 
     describe('with slice facing right', function() {
@@ -62,7 +63,7 @@ describe('Dicer', function() {
 
       it('returns the start position of the slice on the circle', function() {
         assert.equal(round(dicer().getSliceStartPosition().x), -94.74);
-        assert.equal(dicer().getSliceStartPosition().y, 32);
+        assert.equal(round(dicer().getSliceStartPosition().y), 32);
       });
     });
   });
@@ -86,7 +87,7 @@ describe('Dicer', function() {
   describe('getSliceEndPosition', function() {
     it('returns the end position of the slice on the circle', function() {
       assert.equal(round(dicer().getSliceEndPosition().x), 94.74);
-      assert.equal(dicer().getSliceEndPosition().y, -32);
+      assert.equal(round(dicer().getSliceEndPosition().y), -32);
     });
 
     describe('with slice facing right', function() {
@@ -96,7 +97,7 @@ describe('Dicer', function() {
 
       it('returns the end position of the slice on the circle', function() {
         assert.equal(round(dicer().getSliceEndPosition().x), -94.74);
-        assert.equal(dicer().getSliceEndPosition().y, -32);
+        assert.equal(round(dicer().getSliceEndPosition().y), -32);
       });
     });
   });
@@ -701,12 +702,5 @@ describe('Dicer', function() {
     return _dicer = _dicer || new Dicer(
       radius, sectionHeight, sliceSpace, direction
     );
-  }
-
-  function round(degrees) {
-    if (typeof degrees === 'undefined' || degrees === null) {
-      return degrees;
-    }
-    return Math.round(degrees * 100) / 100;
   }
 });
