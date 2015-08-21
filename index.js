@@ -14,14 +14,19 @@ var SliceCreator      = require('./lib/slice-creator');
 
 /**
  */
-var Dicer = function(radius, sectionHeight, sliceSpace, direction) {
-  var fullSlice, circle, sliceCreator, fullSlicePosition;
+var Dicer = function(settings) {
+  var fullSlice, circle, sliceCreator, fullSlicePosition,
+    radius, sliceSpace, direction, sectionHeight;
+  var DEFAULT_SLICE_SPACE = 0;
 
-  direction         = direction || DEFAULT_DIRECTION;
-  circle            = new Circle(radius);
-  sliceCreator      = new SliceCreator(circle, direction);
-  fullSlice         = sliceCreator.fromSectionHeight(sectionHeight);
-  fullSlicePosition = new SlicePosition(circle, fullSlice);
+  // Settings
+  settings      = settings || {};
+  radius        = settings.radius;
+  sectionHeight = settings.sectionHeight;
+  sliceSpace    = settings.sliceSpace || DEFAULT_SLICE_SPACE;
+  direction     = settings.direction  || DEFAULT_DIRECTION;
+
+  circle = new Circle(radius);
 
   this.getRadius = function getRadius() {
     return circle.getRadius();
@@ -36,37 +41,37 @@ var Dicer = function(radius, sectionHeight, sliceSpace, direction) {
   };
 
   this.getSliceStartAngle = function() {
-    return fullSlice.getStartAngle();
+    return this._getSectionSlice().getStartAngle();
   };
 
   this.getSliceStartPosition = function getSliceStartPosition() {
-    return fullSlicePosition.getStartPosition();
+    return this._getSlicePosition().getStartPosition();
   };
 
   this.getSliceEndAngle = function getSliceEndAngle() {
-    return fullSlice.getEndAngle();
+    return this._getSectionSlice().getEndAngle();
   };
 
   this.getSliceEndPosition = function getSliceEndPosition() {
-    return fullSlicePosition.getEndPosition();
+    return this._getSlicePosition().getEndPosition();
   };
 
   this.getSliceCenterAngle = function getSliceCenterAngle() {
-    return fullSlice.getCenterAngle();
+    return this._getSectionSlice().getCenterAngle();
   };
 
   this.getSliceCenterPosition = function getSliceCenterPosition() {
-    return fullSlicePosition.getCenterPosition();
+    return this._getSlicePosition().getCenterPosition();
   };
 
   this.getSliceAngle = function getSliceAngle() {
-    return fullSlice.getTotalAngle();
+    return this._getSectionSlice().getTotalAngle();
   };
 
   this.slice = function slice(numberOfSlices) {
     var slices, sliceDegrees, startAngle, spaceSlice, _i;
     slices = [];
-    spaceSlice = sliceCreator.fromArcLength(sliceSpace)
+    spaceSlice = this._getSliceCreator().fromArcLength(sliceSpace)
     sliceDegrees = getSliceDegrees(
       this.getSliceAngle(), numberOfSlices, spaceSlice.getTotalAngle()
     );
@@ -86,6 +91,20 @@ var Dicer = function(radius, sectionHeight, sliceSpace, direction) {
     for ( _i = 0, _len = _slices.length; _i < _len; _i++ ) {
       iteratorFn.call(this, _slices[_i]);
     }
+  };
+
+  this._getSliceCreator = function() {
+    return sliceCreator = sliceCreator || new SliceCreator(circle, direction);
+  };
+
+  this._getSectionSlice = function() {
+    return fullSlice =
+      fullSlice || this._getSliceCreator().fromSectionHeight(sectionHeight);
+  };
+
+  this._getSlicePosition = function() {
+    return fullSlicePosition =
+      fullSlicePosition || new SlicePosition(circle, this._getSectionSlice());
   };
 
   function buildSlice(startAngle, sliceAngle) {

@@ -190,12 +190,11 @@ describe('Dicer', function() {
 
             beforeEach(function() {
               var dicer;
-              dicer = new Dicer(
-                radius,
-                sectionHeight,
-                dicerOptions.sliceSpace,
-                dicerOptions.direction
-              );
+
+              dicerOptions.radius        = radius;
+              dicerOptions.sectionHeight = sectionHeight;
+              dicer = new Dicer(dicerOptions);
+
               slice = dicer.slice(numberOfSlices)[sliceIndex];
               expectedSlice = expectedSlices[sliceIndex];
             });
@@ -715,8 +714,11 @@ describe('Dicer', function() {
   });
 
   function dicer() {
-    return _dicer = _dicer || new Dicer(
-      radius, sectionHeight, sliceSpace, direction
-    );
+    return _dicer = _dicer || new Dicer({
+      radius:        radius,
+      sectionHeight: sectionHeight,
+      sliceSpace:    sliceSpace,
+      direction:     direction
+    });
   }
 });
