@@ -153,6 +153,22 @@ describe('Dicer', function() {
     });
   });
 
+  describe('eachSlice', function() {
+    var slices, iteratorFn;
+    beforeEach(function() {
+      slices = [];
+      iteratorFn = function(slice) {
+        slices.push(slice);
+      }
+
+      dicer().eachSlice(3, iteratorFn);
+    });
+
+    it('calls the iterator function for each slice', function() {
+      assert.equal(slices.length, 3);
+    });
+  });
+
   describe('slice', function() {
 
     function runSliceSpecs(description, numberOfSlices) {

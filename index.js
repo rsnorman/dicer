@@ -80,6 +80,14 @@ var Dicer = function(radius, sectionHeight, sliceSpace, direction) {
     return slices;
   };
 
+  this.eachSlice = function eachSlice(numberOfSlices, iteratorFn) {
+    var _i, _len, _slices;
+    _slices = this.slice(numberOfSlices);
+    for ( _i = 0, _len = _slices.length; _i < _len; _i++ ) {
+      iteratorFn.call(this, _slices[_i]);
+    }
+  };
+
   function buildSlice(startAngle, sliceAngle) {
     var slice = new Slice(sliceAngle, {
       startAngle: startAngle
